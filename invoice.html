@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>វិក្កយបត្រ - ឌីភារ័ត្ន</title>
+  <style>
+    body {
+      font-family: 'Khmer OS Content', Arial, sans-serif;
+      margin: 20px;
+      text-align: center;
+    }
+    .invoice {
+      width: 58mm;
+      border: 1px solid #000;
+      padding: 10px;
+      margin: 0 auto 20px;
+      text-align: left;
+    }
+    .invoice h1 {
+      font-size: 16px;
+      text-align: center;
+      margin: 5px 0;
+    }
+    .invoice p, .invoice table {
+      font-size: 12px;
+      margin: 5px 0;
+    }
+    .invoice table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .invoice table th, .invoice table td {
+      text-align: left;
+      border: 1px solid #000;
+      padding: 5px;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>វិក្កយបត្រ</h1>
+  <div class="invoice" id="invoice">
+    <h1>ឌីភារ័ត្ន</h1>
+    <p>អាសយដ្ឋាន: ភូមិស៊ុង១ ឃុំស៊ុង ស្រុកសំឡូត ខេត្តបាត់ដំបង</p>
+    <p>ថ្ងៃខែ: 2025-06-21</p>
+    <p>--------------------------</p>
+    <table>
+      <thead>
+        <tr>
+          <th>ទំនិញ</th>
+          <th>ចំនួន</th>
+          <th>តម្លៃ/ឯកតា</th>
+          <th>សរុប</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>សៀវភៅ</td>
+          <td>100</td>
+          <td>1,250៛</td>
+          <td>125,000៛</td>
+        </tr>
+        <tr>
+          <td>ប៊ិក</td>
+          <td>150</td>
+          <td>500៛</td>
+          <td>75,000៛</td>
+        </tr>
+        <tr>
+          <td>សៀវភៅធម៌</td>
+          <td>5</td>
+          <td>23,400៛</td>
+          <td>117,000៛</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>--------------------------</p>
+    <p><strong>សរុប: 317,000៛</strong></p>
+    <p>--------------------------</p>
+  </div>
+  <button onclick="printInvoice()">ព្រីនវិក្កយបត្រ</button>
+
+  <script>
+    async function printInvoice() {
+      try {
+        // Request Bluetooth device
+        const device = await navigator.bluetooth.requestDevice({
+          acceptAllDevices: true,
+          optionalServices: ['printer']
+        });
+
+        // Connect to the GATT server
+        const server = await device.gatt.connect();
+
+        // Get the printer service
+        const service = await server.getPrimaryService('printer');
+
+        // Get the write characteristic
+        const characteristic = await service.getCharacteristic('write');
+
+        // Get the invoice content
+        const invoiceContent = document.getElementById('invoice').innerText;
+
+        // Convert the text to bytes
+        const encoder = new TextEncoder();
+        const data = encoder.encode(invoiceContent);
+
+        // Write the data to the printer
+        await characteristic.writeValue(data);
+
+        alert('វិក្កយបត្របានបោះពុម្ពដោយជោគជ័យ!');
+      } catch (error) {
+        console.error(error);
+        alert('មិនអាចបោះពុម្ពបាន: ' + error.message);
+      }
+    }
+  </script>
+</body>
+</html>
