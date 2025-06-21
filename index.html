@@ -1,131 +1,431 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="km">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>វិក្កយបត្រ - ឌីភារ័ត្ន</title>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
     body {
-      font-family: 'Khmer OS Content', Arial, sans-serif;
-      margin: 20px;
+      font-family: 'Khmer OS Content', 'Arial', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
       text-align: center;
     }
+    
+    .header {
+      margin-bottom: 20px;
+      padding: 10px 0;
+      width: 100%;
+      background: #2c3e50;
+      color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      margin: 5px 0;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+      max-width: 600px;
+    }
+    
+    .invoice-preview {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+      overflow: hidden;
+      width: 100%;
+    }
+    
     .invoice {
       width: 58mm;
-      border: 1px solid #000;
+      min-height: 200px;
+      background: white;
       padding: 10px;
-      margin: 0 auto 20px;
+      margin: 0 auto;
       text-align: left;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
+    
     .invoice h1 {
       font-size: 16px;
       text-align: center;
       margin: 5px 0;
+      color: #2c3e50;
     }
+    
     .invoice p, .invoice table {
       font-size: 12px;
       margin: 5px 0;
+      color: #34495e;
     }
+    
     .invoice table {
       width: 100%;
       border-collapse: collapse;
     }
+    
+    .invoice table th {
+      background-color: #f8f9fa;
+      font-weight: bold;
+    }
+    
     .invoice table th, .invoice table td {
       text-align: left;
-      border: 1px solid #000;
+      border: 1px solid #ddd;
       padding: 5px;
     }
+    
+    .total-row {
+      font-weight: bold;
+      background-color: #e9f7ef;
+    }
+    
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
+      width: 100%;
+    }
+    
     button {
-      background-color: #007BFF;
+      background: linear-gradient(to bottom, #3498db, #2980b9);
       color: white;
       border: none;
-      padding: 10px 20px;
+      padding: 12px 25px;
       font-size: 16px;
-      border-radius: 5px;
+      border-radius: 30px;
       cursor: pointer;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Khmer OS Content';
     }
+    
     button:hover {
-      background-color: #0056b3;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+      background: linear-gradient(to bottom, #2980b9, #3498db);
+    }
+    
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .btn-print {
+      background: linear-gradient(to bottom, #27ae60, #219653);
+    }
+    
+    .btn-print:hover {
+      background: linear-gradient(to bottom, #219653, #27ae60);
+    }
+    
+    .btn-save {
+      background: linear-gradient(to bottom, #9b59b6, #8e44ad);
+    }
+    
+    .btn-save:hover {
+      background: linear-gradient(to bottom, #8e44ad, #9b59b6);
+    }
+    
+    .printer-info {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      width: 100%;
+      text-align: left;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .printer-info h2 {
+      font-size: 18px;
+      color: #2c3e50;
+      margin-bottom: 10px;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 5px;
+    }
+    
+    .printer-info ul {
+      padding-left: 20px;
+      margin: 10px 0;
+    }
+    
+    .printer-info li {
+      margin-bottom: 8px;
+      color: #34495e;
+    }
+    
+    .status {
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      background: #e3f2fd;
+      color: #1976d2;
+      font-size: 14px;
+      display: none;
+      width: 100%;
+    }
+    
+    .status.error {
+      background: #ffebee;
+      color: #d32f2f;
+    }
+    
+    .status.success {
+      background: #e8f5e9;
+      color: #388e3c;
+    }
+    
+    .loading {
+      display: none;
+      margin: 20px 0;
+    }
+    
+    .spinner {
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top: 4px solid #3498db;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .invoice-preview, .invoice-preview * {
+        visibility: visible;
+      }
+      .invoice-preview {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 58mm;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>វិក្កយបត្រ</h1>
-  <div class="invoice" id="invoice">
-    <h1>ឌីភារ័ត្ន</h1>
-    <p>អាសយដ្ឋាន: ភូមិស៊ុង១ ឃុំស៊ុង ស្រុកសំឡូត ខេត្តបាត់ដំបង</p>
-    <p>ថ្ងៃខែ: 2025-06-21</p>
-    <p>--------------------------</p>
-    <table>
-      <thead>
-        <tr>
-          <th>ទំនិញ</th>
-          <th>ចំនួន</th>
-          <th>តម្លៃ/ឯកតា</th>
-          <th>សរុប</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>សៀវភៅ</td>
-          <td>100</td>
-          <td>1,250៛</td>
-          <td>125,000៛</td>
-        </tr>
-        <tr>
-          <td>ប៊ិក</td>
-          <td>150</td>
-          <td>500៛</td>
-          <td>75,000៛</td>
-        </tr>
-        <tr>
-          <td>សៀវភៅធម៌</td>
-          <td>5</td>
-          <td>23,400៛</td>
-          <td>117,000៛</td>
-        </tr>
-      </tbody>
-    </table>
-    <p>--------------------------</p>
-    <p><strong>សរុប: 317,000៛</strong></p>
-    <p>--------------------------</p>
+  <div class="header">
+    <h1>វិក្កយបត្រ</h1>
+    <p>ឌីភារ័ត្ន - ទំនួលខុសត្រូវផ្នែកគ្រឿងសព្វាវុធ</p>
   </div>
-  <button onclick="printInvoice()">ព្រីនវិក្កយបត្រ</button>
+  
+  <div class="container">
+    <div class="invoice-preview">
+      <div class="invoice" id="invoice">
+        <h1>ឌីភារ័ត្ន</h1>
+        <p>អាសយដ្ឋាន: ភូមិស៊ុង១ ឃុំស៊ុង ស្រុកសំឡូត ខេត្តបាត់ដំបង</p>
+        <p>ថ្ងៃខែ: 2025-06-21</p>
+        <p>ពេលវេលា: 14:30:45</p>
+        <p>លេខវិក្កយបត្រ: INV-20250621-001</p>
+        <p>--------------------------</p>
+        <table>
+          <thead>
+            <tr>
+              <th>ទំនិញ</th>
+              <th>ចំនួន</th>
+              <th>តម្លៃ/ឯកតា</th>
+              <th>សរុប</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>សៀវភៅ</td>
+              <td>100</td>
+              <td>1,250៛</td>
+              <td>125,000៛</td>
+            </tr>
+            <tr>
+              <td>ប៊ិក</td>
+              <td>150</td>
+              <td>500៛</td>
+              <td>75,000៛</td>
+            </tr>
+            <tr>
+              <td>សៀវភៅធម៌</td>
+              <td>5</td>
+              <td>23,400៛</td>
+              <td>117,000៛</td>
+            </tr>
+            <tr class="total-row">
+              <td colspan="3"><strong>សរុបរួម</strong></td>
+              <td><strong>317,000៛</strong></td>
+            </tr>
+          </tbody>
+        </table>
+        <p>--------------------------</p>
+        <p>អរគុណសម្រាប់ការជួញដូរ!</p>
+        <p>ទំនាក់ទំនង: 012 345 678</p>
+        <p>--------------------------</p>
+      </div>
+    </div>
+    
+    <div class="controls">
+      <button onclick="printInvoice()" class="btn-print">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2H5zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"/>
+          <path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2V7zm2.5 1a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+        </svg>
+        ព្រីនវិក្កយបត្រ
+      </button>
+      <button onclick="saveAsImage()" class="btn-save">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+          <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+        </svg>
+        រក្សាទុកជារូបភាព
+      </button>
+    </div>
+    
+    <div class="printer-info">
+      <h2>ព័ត៌មានម៉ាស៊ីនបោះពុម្ព</h2>
+      <ul>
+        <li><strong>ឈ្មោះម៉ាស៊ីនបោះពុម្ព:</strong> BT-803</li>
+        <li><strong>អាសយដ្ឋាន Bluetooth:</strong> 86:67:7A:72:BB:FE</li>
+        <li><strong>ទទឹងក្រដាស:</strong> 58mm</li>
+        <li><strong>ការណែនាំ:</strong> សូមធ្វើឱ្យប្រាកដថាម៉ាស៊ីនបោះពុម្ពត្រូវបានបើក និងភ្ជាប់តាម Bluetooth មុនពេលបោះពុម្ព។</li>
+      </ul>
+    </div>
+    
+    <div class="status" id="status"></div>
+    
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p style="margin-top: 10px; color: #2c3e50;">កំពុងបោះពុម្ព... សូមរង់ចាំ</p>
+    </div>
+  </div>
 
   <script>
     async function printInvoice() {
+      const statusEl = document.getElementById('status');
+      const loadingEl = document.getElementById('loading');
+      
       try {
-        // Request Bluetooth device
-        const device = await navigator.bluetooth.requestDevice({
-          acceptAllDevices: true,
-          optionalServices: ['printer']
+        // Show loading
+        loadingEl.style.display = 'block';
+        statusEl.style.display = 'none';
+        
+        // Capture invoice as image
+        const canvas = await html2canvas(document.getElementById('invoice'), {
+          scale: 2,
+          backgroundColor: '#FFFFFF',
+          logging: false
         });
-
-        // Connect to the GATT server
-        const server = await device.gatt.connect();
-
-        // Get the printer service
-        const service = await server.getPrimaryService('printer');
-
-        // Get the write characteristic
-        const characteristic = await service.getCharacteristic('write');
-
-        // Get the invoice content
-        const invoiceContent = document.getElementById('invoice').innerText;
-
-        // Convert the text to bytes
-        const encoder = new TextEncoder();
-        const data = encoder.encode(invoiceContent);
-
-        // Write the data to the printer
-        await characteristic.writeValue(data);
-
-        alert('វិក្កយបត្របានបោះពុម្ពដោយជោគជ័យ!');
+        
+        // Convert canvas to blob
+        canvas.toBlob(async (blob) => {
+          try {
+            // Request Bluetooth device
+            const device = await navigator.bluetooth.requestDevice({
+              filters: [{ name: 'BT-803' }],
+              optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
+            });
+            
+            // Connect to the GATT server
+            const server = await device.gatt.connect();
+            
+            // Get the printer service
+            const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
+            
+            // Get the write characteristic
+            const characteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
+            
+            // Create a readable stream from the blob
+            const reader = new FileReader();
+            reader.readAsArrayBuffer(blob);
+            
+            reader.onloadend = async () => {
+              const buffer = reader.result;
+              const data = new Uint8Array(buffer);
+              
+              // Write the data to the printer
+              await characteristic.writeValue(data);
+              
+              // Hide loading and show success
+              loadingEl.style.display = 'none';
+              statusEl.textContent = 'វិក្កយបត្រត្រូវបានបោះពុម្ពដោយជោគជ័យ!';
+              statusEl.className = 'status success';
+              statusEl.style.display = 'block';
+              
+              // Disconnect
+              device.gatt.disconnect();
+            };
+          } catch (error) {
+            console.error(error);
+            loadingEl.style.display = 'none';
+            statusEl.textContent = 'កំហុសក្នុងការបោះពុម្ព៖ ' + error.message;
+            statusEl.className = 'status error';
+            statusEl.style.display = 'block';
+          }
+        }, 'image/png');
       } catch (error) {
         console.error(error);
-        alert('មិនអាចបោះពុម្ពបាន: ' + error.message);
+        loadingEl.style.display = 'none';
+        statusEl.textContent = 'កំហុសក្នុងការបង្កើតរូបភាព៖ ' + error.message;
+        statusEl.className = 'status error';
+        statusEl.style.display = 'block';
       }
     }
+    
+    function saveAsImage() {
+      html2canvas(document.getElementById('invoice'), {
+        scale: 2,
+        backgroundColor: '#FFFFFF',
+        logging: false
+      }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'វិក្កយបត្រ-ឌីភារ័ត្ន.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        // Show success message
+        const statusEl = document.getElementById('status');
+        statusEl.textContent = 'រូបភាពត្រូវបានរក្សាទុកដោយជោគជ័យ!';
+        statusEl.className = 'status success';
+        statusEl.style.display = 'block';
+      });
+    }
+    
+    // Set current date and time
+    document.addEventListener('DOMContentLoaded', () => {
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0];
+      const timeStr = now.toTimeString().split(' ')[0];
+      
+      document.querySelector('.invoice p:nth-child(3)').textContent = `ថ្ងៃខែ: ${dateStr}`;
+      document.querySelector('.invoice p:nth-child(4)').textContent = `ពេលវេលា: ${timeStr}`;
+    });
   </script>
 </body>
 </html>
